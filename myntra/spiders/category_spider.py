@@ -1,7 +1,7 @@
 import scrapy
 
-class MyntraSpider(scrapy.Spider):
-    name = "myntra"
+class CategorySpider(scrapy.Spider):
+    name = "category"
 
     start_urls = ["https://www.myntra.com/"]
 
@@ -27,5 +27,5 @@ class MyntraSpider(scrapy.Spider):
         return {
             "name": link.css("::text").get(),
             "href": link.css("::attr(href)").get(),
-            "sub": list(map(self.format_link, sub))
+            "subLinks": list(map(self.format_link, sub))
         }
