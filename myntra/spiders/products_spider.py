@@ -10,15 +10,19 @@ class ProductsSpider(scrapy.Spider):
     def parse(self, response):
         category_links = response.css(".desktop-categoryName, .desktop-categoryLink")[0:1]
 
-        yield from response.follow_all(category_links, self.parse_category, meta={"playwright": True})
+        # yield from response.follow_all(category_links, self.parse_category, meta={"playwright": True})
+        for link in category_links:
+            url = response.urljoin(link.css("::attr(href)").get())
+            yield scrapy.Request(url, self.parse_category, meta={"playwright": True}, cb_kwargs={"category": link.css("::text").get()})
 
-    def parse_category(self, response):
+    def parse_category(self, response, category):
         products = response.css(".product-base")
 
         for product in products:
             yield {
                 "name": product.css('.product-product::text').get(),
                 "brand": product.css('.product-brand::text').get(),
+                "category": category,
                 "price": self.get_product_price(product),
                 "basePrice": self.filter_html_tags(product.css('.product-strike').get()),
                 "discount": product.css('.product-discountPercentage::text').get(),
