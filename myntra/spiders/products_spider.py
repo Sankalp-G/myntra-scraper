@@ -1,6 +1,7 @@
 import scrapy
 import w3lib.html
 
+from myntra.items import ProductItem
 
 class ProductsSpider(scrapy.Spider):
     name = "products"
@@ -10,23 +11,30 @@ class ProductsSpider(scrapy.Spider):
     fetch_count = 0
 
     def parse(self, response):
-        category_links = response.css(".desktop-categoryName, .desktop-categoryLink")
+        product_type = None
+
+        category_links = response.css(".desktop-categoryName, .desktop-categoryLink")[0:20]
 
         self.logger.info(f"Fetched {len(category_links)} categories")
 
         for link in category_links:
             url = response.urljoin(link.css("::attr(href)").get())
+
+            if link.css(".desktop-categoryName"):
+                product_type = link.css("::text").get()
+
             yield scrapy.Request(
                 url,
                 self.parse_category,
                 meta={"playwright": True},
                 cb_kwargs={
                     "category": link.css("::text").get(),
+                    "product_type": product_type,
                     "total": len(category_links),
                 },
             )
 
-    def parse_category(self, response, category, total):
+    def parse_category(self, response, category, total, product_type):
         products = response.css(".product-base")
 
         self.logger.info(
@@ -35,19 +43,21 @@ class ProductsSpider(scrapy.Spider):
         self.fetch_count += 1
 
         for product in products:
-            yield {
-                "name": product.css(".product-product::text").get(),
-                "brand": product.css(".product-brand::text").get(),
-                "category": category,
-                "price": self.get_product_price(product),
-                "basePrice": self.filter_html_tags(
-                    product.css(".product-strike").get()
-                ),
-                "discount": product.css(".product-discountPercentage::text").get(),
-                "rating": product.css(".product-ratingsContainer span::text").get(),
-                "ratingCount": product.css(".product-ratingsCount::text").get(),
-                "href": product.css("::attr(href)").get(),
-            }
+            p = ProductItem()
+            p["name"] = product.css(".product-product::text").get()
+            p["brand"] = product.css(".product-brand::text").get()
+            p["category"] = category
+            p["product_type"] = product_type
+            p["price"] = self.get_product_price(product)
+            p["basePrice"] = self.filter_html_tags(
+                product.css(".product-strike").get()
+            )
+            # p["discount"] = product.css(".product-discountPercentage::text").get()
+            p["rating"] = product.css(".product-ratingsContainer span::text").get()
+            p["ratingCount"] = product.css(".product-ratingsCount::text").get()
+            p["href"] = product.css("::attr(href)").get()
+            yield p
+
 
     def get_product_price(self, product):
         if product.css(".product-discountedPrice"):

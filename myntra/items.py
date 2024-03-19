@@ -6,7 +6,15 @@
 import scrapy
 
 
-class MyntraItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class ProductItem(scrapy.Item):
+    name = scrapy.Field()
+    brand = scrapy.Field()
+    category = scrapy.Field()
+    product_type = scrapy.Field()
+    price = scrapy.Field()
+    basePrice = scrapy.Field()
+    discount = scrapy.Field()
+    rating = scrapy.Field()
+    ratingCount = scrapy.Field()
+    href = scrapy.Field()
+    scrapeId = scrapy.Field()
