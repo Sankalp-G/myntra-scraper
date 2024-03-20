@@ -7,6 +7,8 @@
 # useful for handling different item types with a single interface
 from itemadapter.adapter import ItemAdapter
 
+import humanfriendly
+
 class ProductPipeline:
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
@@ -17,4 +19,26 @@ class ProductPipeline:
             if value and isinstance(value, str):
                 adapter[field_name] = value.strip()
 
+        price_keys = ['price', 'base_price']
+        for price_key in price_keys:
+            value = adapter.get(price_key)
+            if value and isinstance(value, str):
+                value = value.replace("Rs. ", "").replace(",", "")
+                adapter[price_key] = int(value)
+
+        rating = adapter.get('rating')
+        if rating:
+            adapter['rating'] = float(rating)
+
+        rating_count = adapter.get('rating_count')
+        if rating_count:
+            adapter['rating_count'] = humanfriendly.parse_size(rating_count)
+
+        price = adapter.get('price')
+        base_price = adapter.get('base_price')
+        if price and base_price:
+            adapter['discount'] = base_price - price
+            adapter['discount_percentage'] = round((1 - price / base_price) * 100, 2)
+
         return item
+

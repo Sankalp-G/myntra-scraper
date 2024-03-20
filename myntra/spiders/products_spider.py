@@ -13,7 +13,7 @@ class ProductsSpider(scrapy.Spider):
     def parse(self, response):
         product_type = None
 
-        category_links = response.css(".desktop-categoryName, .desktop-categoryLink")[0:20]
+        category_links = response.css(".desktop-categoryName, .desktop-categoryLink")
 
         self.logger.info(f"Fetched {len(category_links)} categories")
 
@@ -49,12 +49,12 @@ class ProductsSpider(scrapy.Spider):
             p["category"] = category
             p["product_type"] = product_type
             p["price"] = self.get_product_price(product)
-            p["basePrice"] = self.filter_html_tags(
+            p["base_price"] = self.filter_html_tags(
                 product.css(".product-strike").get()
             )
             # p["discount"] = product.css(".product-discountPercentage::text").get()
             p["rating"] = product.css(".product-ratingsContainer span::text").get()
-            p["ratingCount"] = product.css(".product-ratingsCount::text").get()
+            p["rating_count"] = product.css(".product-ratingsCount::text").get()
             p["href"] = product.css("::attr(href)").get()
             yield p
 
