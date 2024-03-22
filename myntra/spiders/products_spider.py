@@ -8,7 +8,7 @@ class ProductsSpider(scrapy.Spider):
 
     start_urls = ["https://www.myntra.com/"]
 
-    fetch_count = 0
+    fetch_count = 1
 
     def parse(self, response):
         product_type = None
@@ -52,7 +52,6 @@ class ProductsSpider(scrapy.Spider):
             p["base_price"] = self.filter_html_tags(
                 product.css(".product-strike").get()
             )
-            # p["discount"] = product.css(".product-discountPercentage::text").get()
             p["rating"] = product.css(".product-ratingsContainer span::text").get()
             p["rating_count"] = product.css(".product-ratingsCount::text").get()
             p["href"] = product.css("::attr(href)").get()
