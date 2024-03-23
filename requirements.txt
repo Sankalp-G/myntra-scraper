@@ -15,6 +15,7 @@ incremental==22.10.0
 itemadapter==0.8.0
 itemloaders==1.1.0
 jmespath==0.10.0
+json5==0.9.24
 lxml==5.1.0
 packaging==24.0
 parsel==1.9.0
@@ -31,13 +32,18 @@ python-dotenv==1.0.1
 queuelib==1.6.2
 requests==2.31.0
 requests-file==2.0.0
+scrapeops_scrapy==0.5.4
 Scrapy==2.11.1
 scrapy-playwright==0.0.34
+scrapyd==1.4.3
+scrapyd-client @ git+https://github.com/scrapy/scrapyd-client.git@10fdf9bb17d0d50b895404f9a5a5d59521d43f66
 service-identity==24.1.0
 six==1.16.0
+tld==0.13
 tldextract==5.1.1
 Twisted==24.3.0
 typing_extensions==4.10.0
-urllib3==1.24
+uberegg==0.1.1
+urllib3==2.2.1
 w3lib==2.1.2
 zope.interface==6.2

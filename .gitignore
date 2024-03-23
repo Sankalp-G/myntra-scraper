@@ -3,3 +3,10 @@
 __pycache__
 *.html
 .env
+build
+dbs
+eggs
+*.egg-info
+*.egg
+twistd.pid
+logs
