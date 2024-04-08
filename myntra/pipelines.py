@@ -25,29 +25,16 @@ class ProductPipeline:
             if value and isinstance(value, str):
                 adapter[field_name] = value.strip()
 
-        price_keys = ['price', 'base_price']
-        for price_key in price_keys:
-            value = adapter.get(price_key)
-            if value and isinstance(value, str):
-                value = value.replace("Rs. ", "").replace(",", "")
-                adapter[price_key] = float(value)
+        discounted_price = adapter.get('discounted_price')
+        mrp = adapter.get('mrp')
+        if discounted_price and mrp:
+            adapter['discount_percentage'] = round((adapter['discount'] / mrp) * 100)
 
-        rating = adapter.get('rating')
-        if rating:
-            adapter['rating'] = float(rating)
-
-        rating_count = adapter.get('rating_count')
-        if rating_count:
-            adapter['rating_count'] = humanfriendly.parse_size(rating_count)
-
-        price = adapter.get('price')
-        base_price = adapter.get('base_price')
-        if price and base_price:
-            adapter['discount'] = base_price - price
-            adapter['discount_percentage'] = round((1 - price / base_price) * 100, 2)
-        else:
-            adapter['discount'] = 0
-            adapter['discount_percentage'] = 0
+        coupon_code = adapter.get('coupon_code')
+        if not coupon_code:
+            adapter['coupon_code'] = None
+            adapter['coupon_discount'] = None
+            adapter['best_price'] = adapter['discounted_price']
 
         return item
 
@@ -78,15 +65,19 @@ class SaveToPostgresPipeline:
             scrape_id INTEGER REFERENCES scrapes(id) ON DELETE CASCADE ON UPDATE CASCADE,
             name VARCHAR(255),
             brand VARCHAR(255),
-            category VARCHAR(255),
             product_type VARCHAR(255),
-            price INTEGER,
-            base_price INTEGER,
-            rating DECIMAL,
+            sub_category VARCHAR(255),
+            master_category VARCHAR(255),
+            best_price INTEGER,
+            discounted_price INTEGER,
+            mrp INTEGER,
+            coupon_code VARCHAR(255),
+            coupon_discount INTEGER,
+            discount INTEGER,
+            discount_percentage INTEGER,
+            rating FLOAT,
             rating_count INTEGER,
-            href VARCHAR(255),
-            discount DECIMAL,
-            discount_percentage DECIMAL
+            href TEXT
         )
         """)
 
@@ -112,9 +103,9 @@ class SaveToPostgresPipeline:
 
         scrape_id = self.cur.fetchone()[0]
 
-        args_str = ','.join(self.cur.mogrify("(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (adapter['name'], adapter['brand'], adapter['category'], adapter['product_type'], adapter['price'], adapter['base_price'], adapter['rating'], adapter['rating_count'], adapter['href'], adapter['discount'], adapter['discount_percentage'], scrape_id)).decode('utf-8') for adapter in self.products)
+        args_str = ','.join(self.cur.mogrify("(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (adapter['name'], adapter['brand'], adapter['product_type'], adapter['sub_category'], adapter['master_category'], adapter['best_price'], adapter['discounted_price'], adapter['mrp'], adapter['coupon_code'], adapter['coupon_discount'], adapter['discount'], adapter['discount_percentage'], adapter['rating'], adapter['rating_count'], adapter['href'], scrape_id)).decode('utf-8') for adapter in self.products)
         self.cur.execute("""
-        INSERT INTO products (name, brand, category, product_type, price, base_price, rating, rating_count, href, discount, discount_percentage, scrape_id)
+        INSERT INTO products (name, brand, product_type, sub_category, master_category, best_price, discounted_price, mrp, coupon_code, coupon_discount, discount, discount_percentage, rating, rating_count, href, scrape_id)
         VALUES {}
         """.format(args_str))
 

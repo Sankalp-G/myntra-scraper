@@ -5,14 +5,17 @@
 
 import scrapy
 
-
 class ProductItem(scrapy.Item):
     name = scrapy.Field()
     brand = scrapy.Field()
-    category = scrapy.Field()
     product_type = scrapy.Field()
-    price = scrapy.Field()
-    base_price = scrapy.Field()
+    sub_category = scrapy.Field()
+    master_category = scrapy.Field()
+    best_price = scrapy.Field()
+    discounted_price = scrapy.Field()
+    mrp = scrapy.Field()
+    coupon_code = scrapy.Field()
+    coupon_discount = scrapy.Field()
     discount = scrapy.Field()
     discount_percentage = scrapy.Field()
     rating = scrapy.Field()
